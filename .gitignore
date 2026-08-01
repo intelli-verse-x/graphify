@@ -40,3 +40,5 @@ paper/
 
 # macOS Finder metadata
 .DS_Store
+config.bat
+node_modules
