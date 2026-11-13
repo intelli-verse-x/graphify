@@ -1,0 +1,21 @@
+name: Fixture integrity
+on:
+  push:
+    branches: [security/restore-cjs-fixture-2026-11-13]
+  pull_request:
+    paths:
+      - tests/fixtures/cjs_require.js
+      - tests/test_cjs_fixture_integrity.py
+      - .github/workflows/fork-fixture-validation.yml
+permissions:
+  contents: read
+jobs:
+  inert-parser-fixture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Validate reviewed fixture and rejection of executable tails
+        run: python3 -m unittest discover -s tests -p test_cjs_fixture_integrity.py -v
