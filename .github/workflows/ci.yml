@@ -7,6 +7,12 @@ on:
     branches: ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "main"]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+env:
+  AWS_EC2_METADATA_DISABLED: "true"
+
 jobs:
   skillgen-check:
     # Fast lint-style guard: the skill files under graphify/ are generated from
@@ -14,10 +20,12 @@ jobs:
     # generated file or forgot to re-run the generator and bless expected/, and it
     # runs the build-time validators that guard per-host coverage, the file_type
     # enum, the monolith round-trips, and the always-on round-trips.
+    timeout-minutes: 45
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
         with:
+          persist-credentials: false
           # The audit-coverage, monolith-roundtrip, and always-on-roundtrip
           # validators read blobs from origin/v8. A shallow checkout omits that
           # ref, so fetch the full history here and the validators run for real
@@ -47,6 +55,7 @@ jobs:
         run: uv run --frozen python -m tools.skillgen --always-on-roundtrip
 
   test:
+    timeout-minutes: 45
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -55,6 +64,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
+          persist-credentials: false
           # test_skillgen.py reads pre-split skill bodies from the immutable
           # baseline commit via `git show`; a shallow checkout omits that history
           # and the baseline tests fail. Full history mirrors the skillgen-check job.
@@ -85,9 +95,12 @@ jobs:
     # Non-blocking for now (continue-on-error) to avoid breaking CI on
     # pre-existing findings; remove continue-on-error after the initial
     # cleanup pass.
+    timeout-minutes: 45
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Install uv
         uses: astral-sh/setup-uv@v8.1.0
